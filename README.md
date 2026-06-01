@@ -1,5 +1,9 @@
 # Indian Tech Job Market Intelligence Platform (2025)
 
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Render-orange?style=for-the-badge&logo=render)](https://tech-jobs-india.onrender.com)
+
+### 🌐 Live Deployment: [tech-jobs-india.onrender.com](https://tech-jobs-india.onrender.com)
+
 Welcome to the **Indian Tech Job Market Intelligence Platform**, a comprehensive data engineering and machine learning platform built on standard 2025 Indian technology job openings data. 
 
 The application utilizes a cleaned dataset of **3,535 job listings** to generate interactive market visualizations, execute raw SQL analysis, predict expected salary ranges using a trained Random Forest regressor, and perform dynamic resume gap analysis.
