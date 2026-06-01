@@ -1,0 +1,3 @@
+# Force build.sh to always use LF (Linux) line endings to prevent shebang crashes on Render
+build.sh text eol=lf
+*.sh text eol=lf
