@@ -8,7 +8,13 @@ SQL_SCHEMA_PATH = os.path.join(WORKSPACE_DIR, "sql", "schema.sql")
 SQLITE_PATH = os.path.join(WORKSPACE_DIR, "data", "processed", "jobs.db")
 
 # PostgreSQL connection configuration
-POSTGRES_URI = "postgresql://postgres:rohan%404321@localhost:5432/job_market_db"
+db_url = os.environ.get("DATABASE_URL")
+if db_url:
+    if db_url.startswith("postgres://"):
+        db_url = db_url.replace("postgres://", "postgresql://", 1)
+    POSTGRES_URI = db_url
+else:
+    POSTGRES_URI = "postgresql://postgres:rohan%404321@localhost:5432/job_market_db"
 
 def get_db_engine():
     """
