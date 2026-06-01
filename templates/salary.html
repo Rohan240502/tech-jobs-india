@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Salary Predictor - Tech Jobs / IN{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="hero-badge" style="margin-bottom: 8px;">ML Model</div>
+    <h1 style="font-size: 36px; font-weight: 900; margin-bottom: 8px; letter-spacing: -0.03em;">What should you earn?</h1>
+    <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 40px;">Tell us your role, location, experience and skills. We'll predict an LPA range using a RandomForest trained on real Indian job listings.</p>
+
+    <!-- Dual Column Layout exactly matching screenshot 2 -->
+    <div class="grid-main-sidebar" style="gap: 24px;">
+        <!-- Left Column: White Card Form -->
+        <div class="glass-card" style="padding: 32px; background: #ffffff;">
+            <form id="salaryPredictorForm">
+                <!-- Role selection dropdown -->
+                <div class="form-group">
+                    <label for="title" class="form-label" style="font-size: 12px; font-weight: 700; color: var(--text-secondary); text-transform: none;">Role / Title</label>
+                    <select id="title" name="title" class="form-control" required>
+                        <option value="" disabled selected>Select role...</option>
+                        {% for t in unique_titles %}
+                        <option value="{{ t }}">{{ t }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- City selection dropdown -->
+                <div class="form-group">
+                    <label for="location" class="form-label" style="font-size: 12px; font-weight: 700; color: var(--text-secondary); text-transform: none;">City</label>
+                    <select id="location" name="location" class="form-control" required>
+                        <option value="" disabled selected>Select city...</option>
+                        {% for loc in unique_locations %}
+                        <option value="{{ loc }}">{{ loc }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Side by side experience inputs -->
+                <div class="grid-2" style="gap: 16px; margin-bottom: 20px;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label for="minimumExperience" class="form-label" style="font-size: 12px; font-weight: 700; color: var(--text-secondary); text-transform: none;">Min experience (years)</label>
+                        <input type="number" id="minimumExperience" name="minimumExperience" class="form-control" min="0" max="25" value="2" required>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label for="maximumExperience" class="form-label" style="font-size: 12px; font-weight: 700; color: var(--text-secondary); text-transform: none;">Max experience (years)</label>
+                        <input type="number" id="maximumExperience" name="maximumExperience" class="form-control" min="0" max="30" value="5" required>
+                    </div>
+                </div>
+
+                <!-- Comma separated skills input -->
+                <div class="form-group">
+                    <label for="selectedSkillsInput" class="form-label" style="font-size: 12px; font-weight: 700; color: var(--text-secondary); text-transform: none;">Skills (comma-separated)</label>
+                    <textarea id="selectedSkillsInput" name="skills" class="form-control" placeholder="e.g. Python, AWS, Docker, SQL, Spark" required></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-orange" style="width: 100%; border-radius: 6px; padding: 14px; font-weight: 700;">
+                    <i class="fa-solid fa-bolt"></i> Predict salary
+                </button>
+            </form>
+        </div>
+
+        <!-- Right Column: Dark Prediction Card placeholder exactly matching screenshot 2 -->
+        <div id="predictionResultBox" class="dark-card">
+            <h4 class="dark-card-title">Prediction</h4>
+            <div class="dark-card-icon-container">
+                <span class="dark-card-icon"><i class="fa-solid fa-chart-line"></i></span>
+                <p style="font-size: 13px; color: #64748b; font-weight: 500;">Fill the form and hit predict.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}Skills Analyzer - Tech Jobs / IN{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="hero-badge" style="margin-bottom: 8px;">Skills Analyzer</div>
+    <h1 style="font-size: 36px; font-weight: 900; margin-bottom: 8px; letter-spacing: -0.03em;">What India hires for</h1>
+    <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 40px;">Top skills mentioned across 3547 tech openings. Search any skill below to see exactly how often it appears.</p>
+
+    <!-- Dual Column Layout exactly matching screenshot 4 -->
+    <div class="grid-main-sidebar" style="margin-bottom: 40px; gap: 24px;">
+        <!-- Left Column: Top 25 in-demand skills chart -->
+        <div class="glass-card" style="padding: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="font-size: 14px; font-weight: 800; color: var(--text-primary); margin-bottom: 0;">Top 25 in-demand skills</h3>
+                <span style="color: var(--color-orange); font-size: 14px;"><i class="fa-solid fa-bolt-lightning"></i></span>
+            </div>
+            <div id="skillsDemandChart" style="min-height: 900px;"></div>
+        </div>
+
+        <!-- Right Column: Pro Tip Card exactly matching screenshot 4 -->
+        <div class="dark-card" style="height: fit-content; align-self: start; padding: 24px;">
+            <h4 class="dark-card-title" style="margin-bottom: 12px; font-size: 11px;">Pro Tip</h4>
+            <div style="font-size: 18px; font-weight: 800; color: #ffffff; line-height: 1.3; margin-bottom: 16px; font-family: var(--font-inter);">
+                Stack the right 3-5 keywords on your resume.
+            </div>
+            <p style="font-size: 12px; color: #94a3b8; line-height: 1.6; margin-bottom: 0;">
+                Recruiters scan for specific tokens. Combine a primary language, a cloud, and one specialty (e.g., <span style="color: var(--color-orange); font-weight: 700;">Python</span> · <span style="color: var(--color-orange); font-weight: 700;">AWS</span> · <span style="color: var(--color-orange); font-weight: 700;">Spark</span>) to triple your shortlist rate.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

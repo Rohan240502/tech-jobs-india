@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block title %}Tech Jobs / IN{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Hero Row with left info and right methodology card -->
+    <div class="grid-main-sidebar" style="margin-bottom: 60px; align-items: center;">
+        <div class="hero" style="padding: 0;">
+            <div class="hero-badge">
+                <span style="font-size: 14px;">●</span> NAUKRI 2025 · 3547 LIVE TECH OPENINGS
+            </div>
+            
+            <h1 style="font-size: 48px; font-weight: 900; line-height: 1.1; margin-bottom: 24px;">
+                Decode the Indian<br>
+                <span class="orange-highlight">tech job market</span><br>
+                in one place.
+            </h1>
+            
+            <p class="lead" style="margin-bottom: 30px; font-size: 15px;">
+                Explore role demand, city heatmaps, salary distributions, and the skills that move the needle — then predict your worth and match your resume in seconds.
+            </p>
+            
+            <div class="btn-group">
+                <a href="/dashboard" class="btn btn-dark">
+                    <i class="fa-solid fa-chart-simple"></i> Open dashboard
+                </a>
+                <a href="/salary" class="btn btn-orange">
+                    ₹ Predict salary
+                </a>
+                <a href="/resume" class="btn btn-light">
+                    <i class="fa-regular fa-file-lines"></i> Match my resume
+                </a>
+            </div>
+        </div>
+
+        <!-- Methodology Card exactly matching screenshot 5 -->
+        <div class="glass-card" style="padding: 30px; border-radius: 12px; background: #ffffff;">
+            <h4 style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 20px;">
+                Methodology
+            </h4>
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+                <div style="display: flex; gap: 12px; align-items: flex-start;">
+                    <span style="color: var(--color-orange); font-size: 16px; margin-top: 2px;"><i class="fa-solid fa-filter"></i></span>
+                    <div>
+                        <div style="font-weight: 700; font-size: 13px; color: var(--text-primary);">31.72M raw jobs cleaned → 3,547 tech rows</div>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 12px; align-items: flex-start;">
+                    <span style="color: var(--color-orange); font-size: 16px; margin-top: 2px;"><i class="fa-solid fa-map-pin"></i></span>
+                    <div>
+                        <div style="font-weight: 700; font-size: 13px; color: var(--text-primary);">36 computer engineering titles, 60+ cities</div>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 12px; align-items: flex-start;">
+                    <span style="color: var(--color-orange); font-size: 16px; margin-top: 2px;"><i class="fa-solid fa-gears"></i></span>
+                    <div>
+                        <div style="font-weight: 700; font-size: 13px; color: var(--text-primary);">RandomForest pipeline (TF-IDF on skills)</div>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 12px; align-items: flex-start;">
+                    <span style="color: var(--color-orange); font-size: 16px; margin-top: 2px;"><i class="fa-solid fa-circle-check"></i></span>
+                    <div>
+                        <div style="font-weight: 700; font-size: 13px; color: var(--text-primary);">93.5% train / validation match score</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats Summary exactly matching screenshot 5 -->
+    <div class="grid-4" style="margin-bottom: 80px;">
+        <div class="stat-box">
+            <div class="stat-label">Total Openings</div>
+            <div class="stat-number">3,547</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">Companies Hiring</div>
+            <div class="stat-number">641</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">Cities Covered</div>
+            <div class="stat-number">141</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">Avg Salary (LPA)</div>
+            <div class="stat-number" style="color: var(--color-orange);">14.07</div>
+        </div>
+    </div>
+
+    <!-- What You Can Do section exactly matching screenshot 5 -->
+    <div style="border-top: 1px solid var(--border-light); padding-top: 60px;">
+        <div class="hero-badge" style="margin-bottom: 8px;">What you can do</div>
+        <h2 style="font-size: 26px; font-weight: 900; margin-bottom: 40px; letter-spacing: -0.03em;">
+            Four lenses on India's tech hiring
+        </h2>
+        
+        <div class="grid-4">
+            <!-- Lens 1 -->
+            <div class="glass-card" style="display: flex; flex-direction: column; justify-content: space-between; min-height: 180px; padding: 20px;">
+                <div>
+                    <span style="color: var(--color-orange); font-size: 18px; display: block; margin-bottom: 12px;"><i class="fa-solid fa-chart-simple"></i></span>
+                    <h4 style="font-size: 14px; font-weight: 800; margin-bottom: 6px;">Live dashboard</h4>
+                    <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 0;">Top roles, cities, salaries and experience buckets in a glance.</p>
+                </div>
+                <a href="/dashboard" style="color: var(--text-primary); text-decoration: none; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; margin-top: 16px;">
+                    open <span style="color: var(--color-orange);">→</span>
+                </a>
+            </div>
+
+            <!-- Lens 2 -->
+            <div class="glass-card" style="display: flex; flex-direction: column; justify-content: space-between; min-height: 180px; padding: 20px;">
+                <div>
+                    <span style="color: var(--color-orange); font-size: 18px; display: block; margin-bottom: 12px;"><i class="fa-solid fa-code"></i></span>
+                    <h4 style="font-size: 14px; font-weight: 800; margin-bottom: 6px;">Skills demand</h4>
+                    <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 0;">Find out what skills hiring teams look for most – and what they pay.</p>
+                </div>
+                <a href="/skills" style="color: var(--text-primary); text-decoration: none; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; margin-top: 16px;">
+                    open <span style="color: var(--color-orange);">→</span>
+                </a>
+            </div>
+
+            <!-- Lens 3 -->
+            <div class="glass-card" style="display: flex; flex-direction: column; justify-content: space-between; min-height: 180px; padding: 20px;">
+                <div>
+                    <span style="color: var(--color-orange); font-size: 18px; display: block; margin-bottom: 12px;"><i class="fa-solid fa-indian-rupee-sign"></i></span>
+                    <h4 style="font-size: 14px; font-weight: 800; margin-bottom: 6px;">Salary predictor</h4>
+                    <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 0;">ML model trained on real tech job listings outputs LPA with confidence band.</p>
+                </div>
+                <a href="/salary" style="color: var(--text-primary); text-decoration: none; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; margin-top: 16px;">
+                    open <span style="color: var(--color-orange);">→</span>
+                </a>
+            </div>
+
+            <!-- Lens 4 -->
+            <div class="glass-card" style="display: flex; flex-direction: column; justify-content: space-between; min-height: 180px; padding: 20px;">
+                <div>
+                    <span style="color: var(--color-orange); font-size: 18px; display: block; margin-bottom: 12px;"><i class="fa-regular fa-file-lines"></i></span>
+                    <h4 style="font-size: 14px; font-weight: 800; margin-bottom: 6px;">Resume matcher</h4>
+                    <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 0;">Parse your resume, get a fit score, missing skills and best-fit jobs.</p>
+                </div>
+                <a href="/resume" style="color: var(--text-primary); text-decoration: none; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; margin-top: 16px;">
+                    open <span style="color: var(--color-orange);">→</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

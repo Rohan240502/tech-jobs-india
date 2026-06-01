@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}Hiring Dashboard - Tech Jobs / IN{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="hero-badge" style="margin-bottom: 8px;">Control Room</div>
+    <h1 style="font-size: 36px; font-weight: 900; margin-bottom: 8px; letter-spacing: -0.03em;">Hiring dashboard</h1>
+    <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 40px;">Snapshot of role demand, geography, salaries and experience needs.</p>
+
+    <!-- Stat boxes exactly matching screenshot 3 -->
+    <div class="grid-4" style="margin-bottom: 40px;">
+        <div class="stat-box">
+            <div class="stat-label">Openings</div>
+            <div class="stat-number">3,547</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">Companies</div>
+            <div class="stat-number">641</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">Cities</div>
+            <div class="stat-number">141</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">Median Salary (LPA)</div>
+            <div class="stat-number">15.0</div>
+        </div>
+    </div>
+
+    <!-- Dual Column Layout exactly matching screenshot 3 -->
+    <div class="grid-2" style="margin-bottom: 60px; gap: 24px;">
+        <!-- Left Column: Top 10 in-demand roles -->
+        <div class="glass-card" style="padding: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="font-size: 14px; font-weight: 800; color: var(--text-primary); margin-bottom: 0;">Top 10 in-demand roles</h3>
+                <span style="color: var(--color-orange); font-size: 14px;"><i class="fa-solid fa-chart-line"></i></span>
+            </div>
+            <div id="rolesChart" style="min-height: 350px;"></div>
+        </div>
+
+        <!-- Right Column: Top cities -->
+        <div class="glass-card" style="padding: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="font-size: 14px; font-weight: 800; color: var(--text-primary); margin-bottom: 0;">Top cities</h3>
+                <span style="color: var(--color-orange); font-size: 14px;"><i class="fa-solid fa-location-dot"></i></span>
+            </div>
+            <div id="locationChart" style="min-height: 350px;"></div>
+        </div>
+    </div>
+
+    <!-- Live database query tools & extra charts -->
+    <div class="grid-2" style="margin-bottom: 60px; gap: 24px;">
+        <div class="glass-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="font-size: 14px; font-weight: 800; color: var(--text-primary); margin-bottom: 0;">Highest paying roles (Average LPA)</h3>
+                <span style="color: var(--color-orange); font-size: 14px;"><i class="fa-solid fa-indian-rupee-sign"></i></span>
+            </div>
+            <div id="salaryRoleChart" style="min-height: 350px;"></div>
+        </div>
+        <div class="glass-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="font-size: 14px; font-weight: 800; color: var(--text-primary); margin-bottom: 0;">Salary spread vs Experience required</h3>
+                <span style="color: var(--color-orange); font-size: 14px;"><i class="fa-solid fa-circle-nodes"></i></span>
+            </div>
+            <div id="salaryExperienceChart" style="min-height: 350px;"></div>
+        </div>
+    </div>
+
+    <!-- Premium SQL PLAYGROUND (Hidden gem at the bottom) -->
+    <div class="glass-container" style="padding: 40px; margin-bottom: 40px;">
+        <h2 style="margin-bottom: 8px;" class="gradient-text"><i class="fa-solid fa-terminal"></i> SQL Query Playground</h2>
+        <p style="margin-bottom: 24px; font-size: 14px;">Explore raw intelligence using SQL. Click on any of the standard project report queries below, modify them, and run them live against the active SQLite/PostgreSQL database.</p>
+        
+        <div class="tag-container" style="margin-bottom: 24px;">
+            <button class="tag premade-query-btn" style="border-radius: 8px;" data-query="SELECT COUNT(*) as total_jobs FROM jobs;">
+                1. Total Jobs
+            </button>
+            <button class="tag premade-query-btn" style="border-radius: 8px;" data-query="SELECT title, COUNT(*) as total_jobs FROM jobs GROUP BY title ORDER BY total_jobs DESC LIMIT 10;">
+                2. Demanded Roles
+            </button>
+            <button class="tag premade-query-btn" style="border-radius: 8px;" data-query="SELECT &quot;companyName&quot;, COUNT(*) as openings FROM jobs GROUP BY &quot;companyName&quot; ORDER BY openings DESC LIMIT 10;">
+                3. Top Hiring Companies
+            </button>
+            <button class="tag premade-query-btn" style="border-radius: 8px;" data-query="SELECT location, COUNT(*) as total_jobs FROM jobs GROUP BY location ORDER BY total_jobs DESC LIMIT 10;">
+                4. Top Cities
+            </button>
+            <button class="tag premade-query-btn" style="border-radius: 8px;" data-query="SELECT title, ROUND(AVG(avg_salary) / 100000.0, 2) as avg_salary_lpa FROM jobs WHERE avg_salary > 0 GROUP BY title ORDER BY avg_salary_lpa DESC LIMIT 10;">
+                5. Average Salary by Role
+            </button>
+            <button class="tag premade-query-btn" style="border-radius: 8px;" data-query="SELECT &quot;minimumExperience&quot; as experience, ROUND(AVG(avg_salary) / 100000.0, 2) as avg_salary_lpa FROM jobs WHERE avg_salary > 0 GROUP BY &quot;minimumExperience&quot; ORDER BY &quot;minimumExperience&quot;;">
+                6. Salary vs Experience
+            </button>
+        </div>
+
+        <form id="sqlPlaygroundForm">
+            <div class="form-group">
+                <label for="sqlQueryInput" class="form-label">Active SQL Query (Supports standard SQL SELECT queries)</label>
+                <textarea id="sqlQueryInput" class="form-control" style="font-family: monospace; font-size: 14px; min-height: 100px;">SELECT title, COUNT(*) as total_jobs FROM jobs GROUP BY title ORDER BY total_jobs DESC LIMIT 10;</textarea>
+            </div>
+            <button type="submit" id="runSqlQueryBtn" class="btn btn-primary">
+                <i class="fa-solid fa-play"></i> Execute Query
+            </button>
+        </form>
+
+        <div id="sqlResultsBox" style="display: none; margin-top: 30px; border-top: 1px solid var(--border-light); padding-top: 24px;"></div>
+    </div>
+</div>
+{% endblock %}

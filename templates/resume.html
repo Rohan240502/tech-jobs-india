@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Resume Matcher - Tech Jobs / IN{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="hero-badge" style="margin-bottom: 8px;">Resume Matcher</div>
+    <h1 style="font-size: 36px; font-weight: 900; margin-bottom: 8px; letter-spacing: -0.03em;">Beat the ATS, find the right job.</h1>
+    <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 40px;">Paste your resume text. We'll extract your skills, score the best-fit jobs, and highlight the skills you should learn next.</p>
+
+    <!-- Dual Column Layout exactly matching screenshot 1 -->
+    <div class="grid-main-sidebar" style="gap: 24px;">
+        <!-- Left Column: White Card Form -->
+        <div class="glass-card" style="padding: 32px; background: #ffffff;">
+            <form id="resumeParserForm">
+                <!-- Target Role Selection Dropdown -->
+                <div class="form-group">
+                    <label for="target_role" class="form-label" style="font-size: 12px; font-weight: 700; color: var(--text-secondary); text-transform: none;">Target Role / Title</label>
+                    <select id="target_role" name="target_role" class="form-control" required>
+                        <option value="" disabled selected>Select target role...</option>
+                        {% for title in unique_titles %}
+                        <option value="{{ title }}">{{ title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Resume text box -->
+                <div class="form-group">
+                    <label for="resume_text" class="form-label" style="font-size: 12px; font-weight: 700; color: var(--text-secondary); text-transform: none;">Your resume (plain text)</label>
+                    <textarea id="resume_text" name="resume_text" class="form-control" placeholder="Paste your resume content here. Plain text works best." required></textarea>
+                </div>
+
+                <!-- Side-by-side action buttons exactly matching screenshot 1 -->
+                <div style="display: flex; gap: 12px; margin-top: 10px;">
+                    <button type="submit" class="btn btn-dark" style="flex-grow: 1; border-radius: 6px; font-weight: 700;">
+                        <i class="fa-solid fa-magnifying-glass"></i> Analyze resume
+                    </button>
+                    <button type="button" id="trySampleResumeBtn" class="btn btn-light" style="flex-grow: 0.5; border-radius: 6px; font-weight: 700;">
+                        <i class="fa-regular fa-file-lines"></i> Try sample
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Right Column: White Placeholder Card exactly matching screenshot 1 -->
+        <div id="resumeResultBox" class="glass-card" style="display: flex; flex-direction: column; justify-content: center; min-height: 400px; text-align: center; background: #ffffff;">
+            <div class="dark-card-icon-container" style="min-height: auto;">
+                <span class="dark-card-icon" style="color: #cbd5e1; font-size: 48px; margin-bottom: 16px;"><i class="fa-regular fa-file-lines"></i></span>
+                <p style="font-size: 13px; color: #94a3b8; font-weight: 500;">Paste a resume to see analysis here.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

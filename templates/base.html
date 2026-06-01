@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Tech Jobs / IN{% endblock %}</title>
+    <!-- Favicon -->
+    <link rel="icon" href="https://img.icons8.com/nolan/64/database.png" type="image/x-icon">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom Style Sheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <!-- Premium Frosted Navbar -->
+    <nav class="navbar">
+        <div class="nav-content">
+            <a href="/" class="nav-brand">
+                <span class="logo-box">IN</span>
+                <span class="logo-text">Tech Jobs <span class="logo-divider">/</span> IN</span>
+            </a>
+            
+            <ul class="nav-links">
+                <li><a href="/">Home</a></li>
+                <li><a href="/dashboard">Dashboard</a></li>
+                <li><a href="/skills">Skills Demand</a></li>
+                <li><a href="/salary">Salary Estimator</a></li>
+                <li><a href="/resume">Resume Matcher</a></li>
+                <li style="margin-left: 10px;">
+                    <a href="/salary" class="btn btn-orange" style="padding: 8px 16px; font-size: 13px; font-weight: 700; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px;">
+                        ₹ Predict Salary
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Main Content wrapper -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer exactly matching screenshot 5 -->
+    <footer>
+        <div class="footer-content">
+            <div style="text-align: left;">
+                <h4 style="font-size: 13px; font-weight: 800; margin-bottom: 4px; color: var(--text-primary);">Indian Tech Job Market Intelligence</h4>
+                <p style="font-size: 11px; color: var(--text-secondary); margin-bottom: 0; max-width: 500px; line-height: 1.4;">
+                    Real signals from the Indian hiring market — roles in demand, salary benchmarks, and a ML-powered salary predictor. Powered by Naukri 2025 data.
+                </p>
+            </div>
+            <div style="text-align: right; font-size: 10px; font-weight: 700; color: var(--text-secondary); letter-spacing: 0.05em; text-transform: uppercase;">
+                Built with Flask · Scikit-learn · Sqlite
+            </div>
+        </div>
+    </footer>
+
+    <!-- ApexCharts JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <!-- Core Application Controller -->
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>
