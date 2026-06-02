@@ -19,7 +19,7 @@ if os.path.exists(MODEL_PATH):
 else:
     print(f"[ML] WARNING: Model pickle file not found at {MODEL_PATH}.")
 
-def predict_salary(title, location, minimum_experience, maximum_experience, skills):
+def predict_salary(title, location, experience):
     """
     Predicts the salary in LPA (Lakhs Per Annum) based on input features.
     If the model pipeline is not loaded, uses a database fallback.
@@ -29,17 +29,11 @@ def predict_salary(title, location, minimum_experience, maximum_experience, skil
     # Clean and validate input values
     title = str(title).strip().title()
     location = str(location).strip()
-    skills_str = ", ".join(skills) if isinstance(skills, list) else str(skills)
     
     try:
-        minimum_experience = float(minimum_experience)
+        experience = float(experience)
     except:
-        minimum_experience = 0.0
-        
-    try:
-        maximum_experience = float(maximum_experience)
-    except:
-        maximum_experience = minimum_experience + 2.0
+        experience = 2.0
 
     # 1. Use ML Model if loaded
     if model_pipeline is not None:
@@ -48,9 +42,7 @@ def predict_salary(title, location, minimum_experience, maximum_experience, skil
             input_df = pd.DataFrame([{
                 "title": title,
                 "location": location,
-                "minimumExperience": minimum_experience,
-                "maximumExperience": maximum_experience,
-                "tagsAndSkills": skills_str
+                "averageExperience": experience
             }])
             
             prediction = model_pipeline.predict(input_df)[0]
@@ -92,7 +84,7 @@ def predict_salary(title, location, minimum_experience, maximum_experience, skil
             query = f"""
                 SELECT AVG(avg_salary) as db_avg
                 FROM jobs
-                WHERE "minimumExperience" <= {minimum_experience} AND "maximumExperience" >= {maximum_experience} AND avg_salary > 0
+                WHERE "minimumExperience" <= {experience} AND "maximumExperience" >= {experience} AND avg_salary > 0
             """
             _, rows = execute_query(query)
             if rows and rows[0]["db_avg"]:
@@ -100,7 +92,7 @@ def predict_salary(title, location, minimum_experience, maximum_experience, skil
                 
         # Hard fallback to a reasonable default based on experience
         if not db_avg_val:
-            db_avg_val = 4.0 + (minimum_experience * 1.5)
+            db_avg_val = 4.0 + (experience * 1.5)
             
         avg_lpa = round(db_avg_val, 2)
         min_lpa = round(avg_lpa * 0.8, 2)
@@ -127,11 +119,9 @@ if __name__ == "__main__":
     # Test salary predictor
     test_title = "Software Engineer"
     test_loc = "Bengaluru"
-    test_min_exp = 3
-    test_max_exp = 6
-    test_skills = ["Python", "SQL", "Git"]
+    test_exp = 4
     
-    result = predict_salary(test_title, test_loc, test_min_exp, test_max_exp, test_skills)
-    print(f"Salary Prediction for {test_title} ({test_min_exp}-{test_max_exp} Yrs Exp) in {test_loc}:")
+    result = predict_salary(test_title, test_loc, test_exp)
+    print(f"Salary Prediction for {test_title} ({test_exp} Yrs Exp) in {test_loc}:")
     for k, v in result.items():
         print(f"  {k}: {v}")

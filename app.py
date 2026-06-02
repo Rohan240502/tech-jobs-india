@@ -213,13 +213,9 @@ def api_predict_salary():
     data = request.json or {}
     title = data.get("title", "Software Engineer")
     location = data.get("location", "Bengaluru")
-    min_exp = data.get("minimumExperience", 2)
-    max_exp = data.get("maximumExperience", 5)
-    skills_raw = data.get("skills", "")
+    experience = data.get("experience", 4)
     
-    skills = [s.strip() for s in skills_raw.split(",") if s.strip()]
-    
-    prediction = predict_salary(title, location, min_exp, max_exp, skills)
+    prediction = predict_salary(title, location, experience)
     return jsonify(prediction)
 
 @app.route('/api/analyze-resume', methods=['POST'])

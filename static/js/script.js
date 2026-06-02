@@ -224,10 +224,10 @@ function setupAJAXHandlers() {
                         </div>
                         <p style="font-size: 13px; color: #64748b; line-height: 1.5; margin-bottom: 0;">
                             Your target salary is successfully processed by a 150-estimator Random Forest model. 
-                            The pipeline assigns linear weights to:
-                            <br>• <strong>Location:</strong> Geographical demand markups.
-                            <br>• <strong>Skills:</strong> Specialized technology vectors.
-                            <br>• <strong>Experience:</strong> Experience slope multipliers.
+                            The pipeline evaluates:
+                            <br>• <strong>Job Role:</strong> Title demand indexing.
+                            <br>• <strong>Location:</strong> Geographical market factors.
+                            <br>• <strong>Experience:</strong> Years of professional experience scaling.
                         </p>
                     </div>
                 `;
