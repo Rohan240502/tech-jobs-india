@@ -1,5 +1,7 @@
 // Indian Tech Job Market Intelligence - Core JS Controller
 
+window.activeCharts = [];
+
 document.addEventListener("DOMContentLoaded", function() {
     // 1. Activate Active Link in Navigation
     const currentPath = window.location.pathname;
@@ -22,7 +24,10 @@ document.addEventListener("DOMContentLoaded", function() {
         initializeSkillsChart();
     }
 
-    // 4. Setup AJAX Handlers
+    // 4. Setup Theme Toggle Handler
+    initializeThemeToggle();
+
+    // 5. Setup AJAX Handlers
     setupAJAXHandlers();
 });
 
@@ -32,17 +37,19 @@ function initializeDashboardCharts() {
     const colorOrange = '#f97316';
     const colorDark = '#0f172a';
     
+    const isDark = document.body.classList.contains("dark-mode");
+    
     const baseChartOptions = {
         theme: {
-            mode: 'light'
+            mode: isDark ? 'dark' : 'light'
         },
         chart: {
             background: 'transparent',
-            foreColor: '#64748b',
+            foreColor: isDark ? '#94a3b8' : '#64748b',
             toolbar: { show: false }
         },
         grid: {
-            borderColor: '#e2e8f0',
+            borderColor: isDark ? '#1f293d' : '#e2e8f0',
             strokeDashArray: 4
         }
     };
@@ -54,7 +61,7 @@ function initializeDashboardCharts() {
             const options = {
                 ...baseChartOptions,
                 chart: { ...baseChartOptions.chart, type: 'bar', height: 350 },
-                colors: [colorDark],
+                colors: [isDark ? '#3b82f6' : colorDark],
                 series: [{ name: 'Job Openings', data: data.counts }],
                 xaxis: { categories: data.labels },
                 plotOptions: {
@@ -68,6 +75,7 @@ function initializeDashboardCharts() {
             };
             const chart = new ApexCharts(document.querySelector("#rolesChart"), options);
             chart.render();
+            window.activeCharts.push(chart);
         });
 
     // B. Top Cities Chart (Screenshot 3 - Right Column, orange horizontal bars)
@@ -91,6 +99,7 @@ function initializeDashboardCharts() {
             };
             const chart = new ApexCharts(document.querySelector("#locationChart"), options);
             chart.render();
+            window.activeCharts.push(chart);
         });
 
     // C. Average Salary by Role (Horizontal Bar)
@@ -113,6 +122,7 @@ function initializeDashboardCharts() {
             };
             const chart = new ApexCharts(document.querySelector("#salaryRoleChart"), options);
             chart.render();
+            window.activeCharts.push(chart);
         });
 
     // D. Salary vs Experience (Scatter Plot)
@@ -122,7 +132,7 @@ function initializeDashboardCharts() {
             const options = {
                 ...baseChartOptions,
                 chart: { ...baseChartOptions.chart, type: 'scatter', height: 320 },
-                colors: ['#6366f1'],
+                colors: [isDark ? '#818cf8' : '#6366f1'],
                 series: [{
                     name: 'Jobs',
                     data: data.points.map(p => ({ x: p.experience, y: p.salary }))
@@ -137,12 +147,15 @@ function initializeDashboardCharts() {
             };
             const chart = new ApexCharts(document.querySelector("#salaryExperienceChart"), options);
             chart.render();
+            window.activeCharts.push(chart);
         });
 }
 
 // --- Dynamic Chart for Skills Analyzer Page (Screenshot 4) ---
 function initializeSkillsChart() {
     const chartColors = ['#0f172a', '#f97316', '#3b82f6', '#10b981', '#6366f1', '#ec4899', '#f59e0b', '#8b5cf6'];
+    
+    const isDark = document.body.classList.contains("dark-mode");
     
     fetch('/api/stats/skills-top-25')
         .then(res => res.json())
@@ -152,11 +165,14 @@ function initializeSkillsChart() {
                     type: 'bar',
                     height: 900,
                     background: 'transparent',
-                    foreColor: '#64748b',
+                    foreColor: isDark ? '#94a3b8' : '#64748b',
                     toolbar: { show: false }
                 },
+                theme: {
+                    mode: isDark ? 'dark' : 'light'
+                },
                 grid: {
-                    borderColor: '#e2e8f0',
+                    borderColor: isDark ? '#1f293d' : '#e2e8f0',
                     strokeDashArray: 4
                 },
                 // Set custom colored bars dynamically
@@ -175,6 +191,7 @@ function initializeSkillsChart() {
             };
             const chart = new ApexCharts(document.querySelector("#skillsDemandChart"), options);
             chart.render();
+            window.activeCharts.push(chart);
         });
 }
 
@@ -418,4 +435,83 @@ function runActiveSQLQuery() {
         btn.innerText = "Execute Query";
         alert("Server failed to process query.");
     });
+}
+
+// --- Theme Toggling & Dynamic ApexCharts Synchronizer ---
+function initializeThemeToggle() {
+    const themeBtn = document.getElementById("themeToggleBtn");
+    const themeIcon = document.getElementById("themeToggleIcon");
+    if (!themeBtn || !themeIcon) return;
+
+    // Check saved theme or system preference
+    const savedTheme = localStorage.getItem("theme");
+    const systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const isDark = savedTheme === "dark" || (!savedTheme && systemPrefersDark);
+
+    if (isDark) {
+        document.body.classList.add("dark-mode");
+        themeIcon.className = "fa-solid fa-sun";
+    } else {
+        document.body.classList.remove("dark-mode");
+        themeIcon.className = "fa-solid fa-moon";
+    }
+
+    // Toggle theme on click
+    themeBtn.addEventListener("click", function() {
+        if (document.body.classList.contains("dark-mode")) {
+            document.body.classList.remove("dark-mode");
+            themeIcon.className = "fa-solid fa-moon";
+            localStorage.setItem("theme", "light");
+            updateApexChartsTheme('light');
+        } else {
+            document.body.classList.add("dark-mode");
+            themeIcon.className = "fa-solid fa-sun";
+            localStorage.setItem("theme", "dark");
+            updateApexChartsTheme('dark');
+        }
+    });
+}
+
+function updateApexChartsTheme(themeMode) {
+    const isDark = themeMode === 'dark';
+    
+    // Dynamic series color swaps for roles and experience plots
+    const roleBarColor = isDark ? '#3b82f6' : '#0f172a'; // blue bars on dark, slate on light
+    const scatterColor = isDark ? '#818cf8' : '#6366f1'; // indigo shifts
+    
+    if (window.activeCharts && window.activeCharts.length > 0) {
+        window.activeCharts.forEach(chart => {
+            try {
+                // Find if the chart element is Roles chart or Experience chart to update specific color sets
+                const elId = chart.el ? chart.el.id : '';
+                let customColors = null;
+                
+                if (elId === 'rolesChart') {
+                    customColors = [roleBarColor];
+                } else if (elId === 'salaryExperienceChart') {
+                    customColors = [scatterColor];
+                }
+                
+                const updateOpts = {
+                    theme: {
+                        mode: themeMode
+                    },
+                    chart: {
+                        foreColor: isDark ? '#94a3b8' : '#64748b'
+                    },
+                    grid: {
+                        borderColor: isDark ? '#1f293d' : '#e2e8f0'
+                    }
+                };
+                
+                if (customColors) {
+                    updateOpts.colors = customColors;
+                }
+                
+                chart.updateOptions(updateOpts);
+            } catch (e) {
+                console.error("Error updating active chart theme mode:", e);
+            }
+        });
+    }
 }
