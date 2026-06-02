@@ -59,7 +59,7 @@ def predict_salary(title, location, experience):
                 "avg_lpa": avg_salary,
                 "min_lpa": min_salary,
                 "max_lpa": max_salary,
-                "method": "Random Forest ML Model"
+                "method": "Market Analytics Predictive Model"
             }
         except Exception as e:
             print(f"[ML] Model prediction failed: {e}. Falling back to DB stats...")
@@ -102,7 +102,7 @@ def predict_salary(title, location, experience):
             "avg_lpa": avg_lpa,
             "min_lpa": min_lpa,
             "max_lpa": max_lpa,
-            "method": "Database Statistical Averages (Fallback)"
+            "method": "Historical Salary Database (Fallback)"
         }
     except Exception as e:
         print(f"[ML] Database fallback failed: {e}")

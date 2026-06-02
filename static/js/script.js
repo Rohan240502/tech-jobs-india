@@ -236,14 +236,14 @@ function setupAJAXHandlers() {
                         Market range: ${result.min_lpa} LPA - ${result.max_lpa} LPA
                     </div>
                     <p style="font-size: 13px; color: #64748b; margin-bottom: 24px;">
-                        Model method: ${result.method}
+                        Prediction engine: ${result.method}
                     </p>
                     <div style="border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 20px;">
                         <div style="font-size: 12px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px;">
-                            Model Breakdown
+                            Market Analytics Breakdown
                         </div>
                         <p style="font-size: 13px; color: #64748b; line-height: 1.5; margin-bottom: 0;">
-                            Your target salary is successfully processed by a 150-estimator Random Forest model. 
+                            Your expected salary is successfully calculated by our AI-driven salary intelligence model. 
                             The pipeline evaluates:
                             <br>• <strong>Job Role:</strong> Title demand indexing.
                             <br>• <strong>Location:</strong> Geographical market factors.
