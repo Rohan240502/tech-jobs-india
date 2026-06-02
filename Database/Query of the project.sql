@@ -45,6 +45,7 @@ ORDER BY Total_jobs
 
 
 
+# Important Query 
 
 SELECT * FROM user_analytics ORDER BY timestamp DESC;
 

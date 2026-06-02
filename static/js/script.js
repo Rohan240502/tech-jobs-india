@@ -24,8 +24,16 @@ document.addEventListener("DOMContentLoaded", function() {
         initializeSkillsChart();
     }
 
+    // 3b. Initialize Crowdsourced Trends Dashboard (only if on trends page)
+    if (document.getElementById("crowdRolesChart")) {
+        initializeCrowdsourcedDashboard();
+    }
+
     // 4. Setup Theme Toggle Handler
     initializeThemeToggle();
+
+    // 4b. Setup Chatbot Widget Handler (global floating assistant)
+    initializeChatbotWidget();
 
     // 5. Setup AJAX Handlers
     setupAJAXHandlers();
@@ -498,10 +506,12 @@ function updateApexChartsTheme(themeMode) {
                 const elId = chart.el ? chart.el.id : '';
                 let customColors = null;
                 
-                if (elId === 'rolesChart') {
+                if (elId === 'rolesChart' || elId === 'crowdRolesChart') {
                     customColors = [roleBarColor];
                 } else if (elId === 'salaryExperienceChart') {
                     customColors = [scatterColor];
+                } else if (elId === 'crowdLocationsChart') {
+                    customColors = [isDark ? '#f97316' : '#ea580c'];
                 }
                 
                 const updateOpts = {
@@ -526,4 +536,368 @@ function updateApexChartsTheme(themeMode) {
             }
         });
     }
+}
+
+// --- Live Crowdsourced Trends Dashboard Controller ---
+function initializeCrowdsourcedDashboard() {
+    const isDark = document.body.classList.contains("dark-mode");
+    const roleBarColor = isDark ? '#3b82f6' : '#0f172a';
+    const locBarColor = isDark ? '#f97316' : '#ea580c';
+
+    const baseChartOptions = {
+        theme: {
+            mode: isDark ? 'dark' : 'light'
+        },
+        chart: {
+            background: 'transparent',
+            foreColor: isDark ? '#94a3b8' : '#64748b',
+            toolbar: { show: false }
+        },
+        grid: {
+            borderColor: isDark ? '#1f293d' : '#e2e8f0',
+            strokeDashArray: 4
+        }
+    };
+
+    fetch('/api/stats/crowdsourced')
+        .then(res => res.json())
+        .then(data => {
+            // 1. Update Metrics Cards
+            document.getElementById("metricTotalPredictions").innerText = data.metrics.total_predictions;
+            document.getElementById("metricTotalEmails").innerText = data.metrics.total_emails;
+            document.getElementById("metricAvgLpa").innerText = `₹ ${data.metrics.avg_lpa} LPA`;
+
+            // 2. Render Most Searched Job Roles Chart
+            const rolesOptions = {
+                ...baseChartOptions,
+                chart: { ...baseChartOptions.chart, id: 'crowdRolesChart', type: 'bar', height: 350 },
+                colors: [roleBarColor],
+                series: [{ name: 'Queries Count', data: data.roles.counts }],
+                xaxis: { categories: data.roles.labels },
+                plotOptions: {
+                    bar: {
+                        borderRadius: 4,
+                        horizontal: true,
+                        barHeight: '45%'
+                    }
+                }
+            };
+            const rolesChart = new ApexCharts(document.querySelector("#crowdRolesChart"), rolesOptions);
+            rolesChart.render();
+            window.activeCharts.push(rolesChart);
+
+            // 3. Render Top Geographic Locations Chart
+            const locsOptions = {
+                ...baseChartOptions,
+                chart: { ...baseChartOptions.chart, id: 'crowdLocationsChart', type: 'bar', height: 350 },
+                colors: [locBarColor],
+                series: [{ name: 'Queries Count', data: data.locations.counts }],
+                xaxis: { categories: data.locations.labels },
+                plotOptions: {
+                    bar: {
+                        borderRadius: 4,
+                        horizontal: true,
+                        barHeight: '45%'
+                    }
+                }
+            };
+            const locsChart = new ApexCharts(document.querySelector("#crowdLocationsChart"), locsOptions);
+            locsChart.render();
+            window.activeCharts.push(locsChart);
+
+            // 4. Populate Live Activity Table Logs
+            const tableBody = document.getElementById("crowdActivityTableBody");
+            if (data.recent_queries.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                            No user queries logged in the analytics engine yet.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            let tableHtml = '';
+            data.recent_queries.forEach(q => {
+                const badgeHtml = q.query_type === 'salary_prediction' 
+                    ? `<span style="background: rgba(249, 115, 22, 0.08); border: 1px solid rgba(249, 115, 22, 0.2); color: var(--color-orange); font-size: 11px; padding: 4px 8px; font-weight: 700; border-radius: 4px;">Predict Salary</span>`
+                    : `<span style="background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.2); color: #3b82f6; font-size: 11px; padding: 4px 8px; font-weight: 700; border-radius: 4px;">Resume Scan</span>`;
+                
+                tableHtml += `
+                    <tr>
+                        <td><strong>#${q.id}</strong></td>
+                        <td>${badgeHtml}</td>
+                        <td>${q.job_role || '-'}</td>
+                        <td>${q.experience || '-'}</td>
+                        <td>${q.location || '-'}</td>
+                        <td style="color: var(--color-orange); font-weight: 700;">${q.predicted_lpa || '-'}</td>
+                        <td style="font-family: monospace; font-size: 11px; color: var(--text-secondary);">${q.user_email || '-'}</td>
+                        <td style="font-size: 12px; color: var(--text-muted);">${q.timestamp || '-'}</td>
+                    </tr>
+                `;
+            });
+            tableBody.innerHTML = tableHtml;
+        })
+        .catch(err => {
+            console.error("Error loading crowdsourced metrics dashboard:", err);
+            const tableBody = document.getElementById("crowdActivityTableBody");
+            if (tableBody) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="8" style="text-align: center; color: #ef4444; padding: 30px;">
+                            <i class="fa-solid fa-circle-exclamation"></i> Failed to retrieve active search analytics from database.
+                        </td>
+                    </tr>
+                `;
+            }
+        });
+}
+
+// --- Premium AI Career Coach Chatbot Controller ---
+let typingIndicatorElem = null;
+
+function initializeChatbotWidget() {
+    const btn = document.getElementById("chatbotWidgetBtn");
+    const panel = document.getElementById("chatbotWidgetPanel");
+    const closeBtn = document.getElementById("closeChatWidgetBtn");
+    const clearBtn = document.getElementById("clearChatHistoryBtn");
+    const form = document.getElementById("chatWidgetForm");
+    const input = document.getElementById("chatWidgetInput");
+    const messagesContainer = document.getElementById("chatWidgetMessages");
+
+    if (!btn || !panel || !messagesContainer) return;
+
+    // Toggle Chat Panel visibility
+    btn.addEventListener("click", function() {
+        panel.classList.toggle("open");
+        if (panel.classList.contains("open")) {
+            input.focus();
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+    });
+
+    closeBtn.addEventListener("click", function() {
+        panel.classList.remove("open");
+    });
+
+    // Load Chat History from Local Storage if available
+    const savedHistory = localStorage.getItem("chat_history");
+    if (savedHistory) {
+        try {
+            const history = JSON.parse(savedHistory);
+            if (history.length > 0) {
+                messagesContainer.innerHTML = '';
+                history.forEach(msg => {
+                    appendChatMessageHTML(msg.text, msg.sender);
+                });
+            }
+        } catch (e) {
+            console.error("Error parsing chat history:", e);
+        }
+    }
+
+    // Clear Chat History
+    clearBtn.addEventListener("click", function() {
+        if (confirm("Are you sure you want to clear your conversation history with your AI Career Coach?")) {
+            localStorage.removeItem("chat_history");
+            messagesContainer.innerHTML = `
+                <div class="chat-message coach">
+                    Hello! I am your **AI Career Coach** 🤖
+                    <br><br>
+                    Need help **negotiating your expected salary**, **matching skills for top roles**, or **mapping out study plans**? Ask me anything!
+                </div>
+            `;
+            // Simple render on the default greeting
+            const greetMsg = messagesContainer.querySelector(".chat-message.coach");
+            greetMsg.innerHTML = renderMarkdown(greetMsg.innerHTML);
+        }
+    });
+
+    // Handle initial greeting rendering (if it has markdown tags)
+    const initialCoachMessage = messagesContainer.querySelector(".chat-message.coach");
+    if (initialCoachMessage) {
+        initialCoachMessage.innerHTML = renderMarkdown(initialCoachMessage.innerHTML);
+    }
+
+    // Form Submission
+    form.addEventListener("submit", function(e) {
+        e.preventDefault();
+        const text = input.value.trim();
+        if (!text) return;
+
+        // 1. Render user message in UI
+        appendChatMessageHTML(text, 'user');
+        input.value = '';
+        saveCurrentChatState();
+
+        // 2. Display bouncing dot typing bubble
+        showChatTypingBubble();
+
+        // 3. Post to Gemini pipeline route
+        fetch('/api/career-chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: text })
+        })
+        .then(res => res.json())
+        .then(data => {
+            hideChatTypingBubble();
+            appendChatMessageHTML(data.response, 'coach');
+            saveCurrentChatState();
+        })
+        .catch(err => {
+            console.error("Chat pipeline error:", err);
+            hideChatTypingBubble();
+            appendChatMessageHTML("I apologize, but my backend server encountered a communication issue. Please retry.", 'coach');
+        });
+    });
+
+    function appendChatMessageHTML(text, sender) {
+        const msgDiv = document.createElement("div");
+        msgDiv.className = `chat-message ${sender}`;
+        msgDiv.innerHTML = sender === 'coach' ? renderMarkdown(text) : escapeHtml(text);
+        messagesContainer.appendChild(msgDiv);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    function showChatTypingBubble() {
+        if (typingIndicatorElem) return;
+        typingIndicatorElem = document.createElement("div");
+        typingIndicatorElem.className = "chat-message coach";
+        typingIndicatorElem.innerHTML = `
+            <div class="typing-bubble">
+                <span class="typing-dot"></span>
+                <span class="typing-dot"></span>
+                <span class="typing-dot"></span>
+            </div>
+        `;
+        messagesContainer.appendChild(typingIndicatorElem);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    function hideChatTypingBubble() {
+        if (typingIndicatorElem) {
+            typingIndicatorElem.remove();
+            typingIndicatorElem = null;
+        }
+    }
+
+    function saveCurrentChatState() {
+        const messageElements = messagesContainer.querySelectorAll(".chat-message");
+        const list = [];
+        messageElements.forEach(elem => {
+            // Ignore the temporary typing indicator bubble
+            if (elem.querySelector(".typing-bubble")) return;
+            
+            const isCoach = elem.classList.contains("coach");
+            list.push({
+                text: elem.innerHTML, // Keep structured markdown/HTML intact
+                sender: isCoach ? 'coach' : 'user'
+            });
+        });
+        // We limit saved lines to last 30 messages to avoid local storage overflow
+        if (list.length > 30) {
+            list.splice(0, list.length - 30);
+        }
+        localStorage.setItem("chat_history", JSON.stringify(list));
+    }
+}
+
+// Helper to escape HTML tags for secure user text display
+function escapeHtml(text) {
+    return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+// Compact smart custom markdown parser for headers, lists, boldings, and newlines
+function renderMarkdown(text) {
+    // 1. Unescape HTML elements if it was already formatted safely, 
+    // but escape raw brackets first
+    let html = text
+        .replace(/&lt;/g, "<")
+        .replace(/&gt;/g, ">");
+        
+    // Standardize newlines
+    html = html.replace(/\r\n/g, "\n");
+
+    // 2. Headers: ### Title or ## Title -> <h3>Title</h3>
+    html = html.replace(/^### (.*?)$/gm, '<h3 style="font-size: 13.5px; font-weight: 800; color: var(--color-orange); margin: 10px 0 6px 0;">$1</h3>');
+    html = html.replace(/^## (.*?)$/gm, '<h3 style="font-size: 13.5px; font-weight: 800; color: var(--color-orange); margin: 10px 0 6px 0;">$1</h3>');
+    html = html.replace(/^# (.*?)$/gm, '<h3 style="font-size: 13.5px; font-weight: 800; color: var(--color-orange); margin: 10px 0 6px 0;">$1</h3>');
+
+    // 3. Boldings: **text** -> <strong>text</strong>
+    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+    // 4. Parse Lists (Both Unordered * and Ordered 1.)
+    const lines = html.split("\n");
+    let inUnordered = false;
+    let inOrdered = false;
+
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+
+        if (line.startsWith("* ") || line.startsWith("- ")) {
+            const content = line.substring(2);
+            if (!inUnordered) {
+                lines[i] = `<ul style="margin-left: 16px; margin-bottom: 6px;"><li>${content}</li>`;
+                inUnordered = true;
+            } else {
+                lines[i] = `<li>${content}</li>`;
+            }
+            if (inOrdered) {
+                lines[i-1] += "</ol>";
+                inOrdered = false;
+            }
+        } else if (line.match(/^\d+\.\s/)) {
+            const content = line.replace(/^\d+\.\s/, '');
+            if (!inOrdered) {
+                lines[i] = `<ol style="margin-left: 16px; margin-bottom: 6px;"><li>${content}</li>`;
+                inOrdered = true;
+            } else {
+                lines[i] = `<li>${content}</li>`;
+            }
+            if (inUnordered) {
+                lines[i-1] += "</ul>";
+                inUnordered = false;
+            }
+        } else {
+            // Close open tags if any line is regular text
+            if (inUnordered) {
+                lines[i-1] += "</ul>";
+                inUnordered = false;
+            }
+            if (inOrdered) {
+                lines[i-1] += "</ol>";
+                inOrdered = false;
+            }
+        }
+    }
+
+    // Safeguard trailing list ends
+    if (inUnordered) {
+        lines[lines.length - 1] += "</ul>";
+    }
+    if (inOrdered) {
+        lines[lines.length - 1] += "</ol>";
+    }
+
+    html = lines.join("\n");
+
+    // 5. Paragraph double line-breaks
+    html = html.split("\n\n").map(p => {
+        const trimmed = p.trim();
+        if (!trimmed) return "";
+        // Don't wrap tags like <ul>, <ol>, <h3>, <li> in extra paragraphs
+        if (trimmed.startsWith("<ul") || trimmed.startsWith("<ol") || trimmed.startsWith("<h3") || trimmed.startsWith("<li")) {
+            return trimmed;
+        }
+        return `<p style="margin-bottom: 8px;">${trimmed.replace(/\n/g, "<br>")}</p>`;
+    }).join("");
+
+    return html;
 }

@@ -310,6 +310,213 @@ def api_run_query():
         "rows": rows
     })
 
+@app.route('/trends')
+def trends():
+    return render_template('trends.html')
+
+@app.route('/api/stats/crowdsourced')
+def api_stats_crowdsourced():
+    # 1. Total predictions logged where query_type = 'salary_prediction'
+    _, pred_rows = execute_query("SELECT COUNT(*) as cnt FROM user_analytics WHERE query_type = 'salary_prediction'")
+    total_predictions = pred_rows[0]["cnt"] if pred_rows else 0
+
+    # 2. Email Leads Captured where user_email IS NOT NULL AND user_email != ''
+    _, email_rows = execute_query("SELECT COUNT(*) as cnt FROM user_analytics WHERE user_email IS NOT NULL AND user_email != ''")
+    total_emails = email_rows[0]["cnt"] if email_rows else 0
+
+    # 3. Average expected LPA where query_type = 'salary_prediction' AND predicted_lpa > 0
+    _, lpa_rows = execute_query("SELECT AVG(predicted_lpa) as avg_lpa FROM user_analytics WHERE query_type = 'salary_prediction' AND predicted_lpa > 0")
+    avg_lpa = round(lpa_rows[0]["avg_lpa"], 2) if lpa_rows and lpa_rows[0]["avg_lpa"] is not None else 0.0
+
+    # 4. Top 8 job roles
+    _, roles_rows = execute_query("""
+        SELECT job_role, COUNT(*) as cnt 
+        FROM user_analytics 
+        WHERE job_role IS NOT NULL AND job_role != '' 
+        GROUP BY job_role 
+        ORDER BY cnt DESC 
+        LIMIT 8
+    """)
+    roles_labels = [r["job_role"].title() for r in roles_rows]
+    roles_counts = [r["cnt"] for r in roles_rows]
+
+    # 5. Top 8 locations
+    _, locs_rows = execute_query("""
+        SELECT location, COUNT(*) as cnt 
+        FROM user_analytics 
+        WHERE location IS NOT NULL AND location != '' 
+        GROUP BY location 
+        ORDER BY cnt DESC 
+        LIMIT 8
+    """)
+    locs_labels = [r["location"].title() for r in locs_rows]
+    locs_counts = [r["cnt"] for r in locs_rows]
+
+    # 6. Last 8 queries
+    _, last_queries = execute_query("""
+        SELECT id, query_type, job_role, experience, location, predicted_lpa, user_email, timestamp 
+        FROM user_analytics 
+        ORDER BY timestamp DESC 
+        LIMIT 8
+    """)
+    
+    # Process timestamps safely to avoid serialization issues
+    for q in last_queries:
+        if "timestamp" in q and q["timestamp"] is not None:
+            if not isinstance(q["timestamp"], str):
+                q["timestamp"] = q["timestamp"].strftime("%Y-%m-%d %H:%M:%S")
+        # clean display text
+        if q.get("user_email"):
+            # mask email slightly for privacy: ro***@domain.com
+            email = q["user_email"]
+            if "@" in email:
+                parts = email.split("@")
+                masked = parts[0][:2] + "***@" + parts[1]
+                q["user_email"] = masked
+        else:
+            q["user_email"] = "-"
+        
+        if not q.get("location"):
+            q["location"] = "-"
+            
+        if q.get("experience") is not None and q["experience"] > 0:
+            q["experience"] = f"{int(q['experience'])} Yrs" if q["experience"].is_integer() else f"{q['experience']} Yrs"
+        else:
+            q["experience"] = "-"
+            
+        if q.get("predicted_lpa") and q["predicted_lpa"] > 0:
+            q["predicted_lpa"] = f"₹ {q['predicted_lpa']} LPA"
+        else:
+            q["predicted_lpa"] = "-"
+
+    return jsonify({
+        "metrics": {
+            "total_predictions": total_predictions,
+            "total_emails": total_emails,
+            "avg_lpa": avg_lpa
+        },
+        "roles": {
+            "labels": roles_labels,
+            "counts": roles_counts
+        },
+        "locations": {
+            "labels": locs_labels,
+            "counts": locs_counts
+        },
+        "recent_queries": last_queries
+    })
+
+@app.route('/api/career-chat', methods=['POST'])
+def api_career_chat():
+    data = request.json or {}
+    message = data.get("message", "").strip()
+    
+    if not message:
+        return jsonify({"response": "I didn't receive any message. How can I assist you with your tech career in India?"})
+        
+    api_key = os.environ.get("GEMINI_API_KEY")
+    
+    # 1. If Gemini API Key is configured, attempt to use generative AI
+    if api_key:
+        try:
+            import google.generativeai as genai
+            genai.configure(api_key=api_key)
+            
+            model = genai.GenerativeModel(
+                model_name='gemini-1.5-flash',
+                system_instruction=(
+                    "You are 'Antigravity AI Career Coach', a premium, helpful career mentor specializing in the Indian Tech Job Market. "
+                    "You provide expert guidance on salary negotiation, interview preparation, upskilling, resume building, and dynamic market trends in tech hubs like Bengaluru, Pune, Hyderabad, Mumbai, Chennai, and Gurugram. "
+                    "Keep your responses concise, highly structured, professional, and readable. Use standard markdown for bold text and bullet points."
+                )
+            )
+            
+            response = model.generate_content(message)
+            return jsonify({"response": response.text, "mode": "gemini"})
+        except Exception as e:
+            print(f"[Chatbot] Gemini API execution failed: {e}. Falling back to NLP Coach...")
+            
+    # 2. Rule-based local NLP Fallback Coach if key is missing or failed
+    response_text = get_local_coach_response(message)
+    return jsonify({"response": response_text, "mode": "fallback"})
+
+def get_local_coach_response(message):
+    msg = message.lower()
+    
+    # Salary / LPA / Negotiation keywords
+    if any(k in msg for k in ["salary", "lpa", "negotiate", "money", "package", "compensation", "hike", "raise"]):
+        return (
+            "### 💰 Salary Negotiation & Compensation Guidance\n\n"
+            "Navigating tech salary negotiations in India requires strategic positioning. Here is a quick guide:\n\n"
+            "1. **Know Your Worth:** Use our **Salary Estimator** to search for your role, location, and experience based on Naukri 2025 benchmarks.\n"
+            "2. **The 30-40% Rule:** Standard hikes for standard transitions range from 30% to 50%. For hot skills like AI/ML or cloud architecture, premiums can be much higher (up to 80-100%).\n"
+            "3. **Base vs. CTC:** Always clarify the fixed base salary versus the total CTC (which includes variable pay, stock options/RSUs, and joining bonuses).\n"
+            "4. **Multiple Offers:** The strongest leverage in India is having a competing offer. Be professional, show enthusiasm for the role, and let recruiters know you have active pipelines.\n\n"
+            "Do you have a specific role or offer you want to discuss?"
+        )
+        
+    # Resume / CV / ATS keywords
+    if any(k in msg for k in ["resume", "cv", "ats", "portfolio", "profile", "linkedin"]):
+        return (
+            "### 📄 Tailoring Your Resume for the ATS\n\n"
+            "Most top Indian tech employers (like TCS, Infosys, Wipro, and global capability centers) use Applicant Tracking Systems (ATS). To maximize your callbacks:\n\n"
+            "1. **Use the Resume Matcher:** Go to our **Resume Matcher** tool, select your target role, paste your resume text, and run an ATS scan to instantly uncover matching skills and gaps.\n"
+            "2. **Incorporate Job Keywords:** Tailor your resume summary and bullet points to explicitly match the phrasing in target job descriptions.\n"
+            "3. **Quantify Achievements:** Instead of listing responsibilities, write: *'Optimized SQL query performance by 40%, reducing database load times by 2 seconds.'*\n"
+            "4. **Simple Layout:** Avoid multi-column graphics, charts, or images in your resume. Use a clean, single-column PDF format that parser engines can read easily."
+        )
+        
+    # Job hub hubs / Location keywords
+    if any(k in msg for k in ["bengaluru", "bangalore", "pune", "hyderabad", "mumbai", "chennai", "gurugram", "delhi", "noida", "location"]):
+        return (
+            "### 📍 Indian Tech Job Geographic Hotspots\n\n"
+            "The Indian tech landscape is heavily clustered in specific geographic centers:\n\n"
+            "* **Bengaluru (The Silicon Valley):** Leader in product startups, global R&D centers, and SaaS. Demands high technical proficiency and commands the highest salary benchmarks.\n"
+            "* **Hyderabad & Pune:** Major hubs for large IT MNCs and enterprise SaaS companies. Strong demand for Cloud, DevOps, and Full Stack developers.\n"
+            "* **Gurugram/Noida (NCR):** Fast-growing fintech and consulting startup hub. High demand for Data Analysts, AI Engineers, and Product Managers.\n"
+            "* **Mumbai & Chennai:** Mumbai dominates Fintech, Banking tech, and e-commerce. Chennai remains the primary hub for SaaS giants and automotive tech systems."
+        )
+        
+    # Study plan / prep / learn keywords
+    if any(k in msg for k in ["study", "learn", "course", "skill", "prepare", "upskill", "path", "roadmap"]):
+        return (
+            "### 📚 4-Week Structured Upskilling Prep Plan\n\n"
+            "Here is a proven study path to scale your technical capacity and landing interviews:\n\n"
+            "* **Week 1: Core Fundamentals & DS & Algo**\n"
+            "  * Re-learn data structures (Arrays, Trees, HashMaps) and algorithms.\n"
+            "  * Practice standard problems on LeetCode/HackerRank (specifically focus on arrays, string manipulations, and hashing).\n"
+            "* **Week 2: System Design & Databases**\n"
+            "  * Understand RESTful API structures, SQL queries, indexing, and normalization.\n"
+            "  * Study key concepts: horizontal vs. vertical scaling, caching (Redis), and load balancers.\n"
+            "* **Week 3: Core Specialized Frameworks**\n"
+            "  * Focus on the technology stack of choice (e.g., Python/Flask/Django, Node.js, React, or Java/Spring Boot).\n"
+            "  * Complete a minor portfolio project demonstrating full-stack CRUD capabilities.\n"
+            "* **Week 4: ATS Resume Optimization & Mock Interviews**\n"
+            "  * Run your CV through our **Resume Matcher** to remove gaps.\n"
+            "  * Engage in behavioral interview prep (using the STAR method for past projects)."
+        )
+
+    # Specific role keywords
+    if any(k in msg for k in ["developer", "engineer", "data scientist", "analyst", "product manager", "devops", "cloud", "frontend", "backend", "fullstack"]):
+        return (
+            "### 🛠️ Role-Specific Market Insights\n\n"
+            "The Indian hiring ecosystem has transitioned towards high-skill specialization. Here is what is trending:\n\n"
+            "* **Full-Stack / Backend Developers:** Deep knowledge of databases (Postgres, MongoDB), microservices, and asynchronous event loops is highly prized. Major stacks: MERN, Java/Spring, Python/FastAPI.\n"
+            "* **Data Scientists & AI Engineers:** While standard python/pandas is common, expertise in fine-tuning LLMs, retrieval-augmented generation (RAG), and vector databases (Pinecone, Chroma) sets candidates apart.\n"
+            "* **DevOps & Cloud Engineers:** AWS, Kubernetes, Terraform, and CI/CD pipelines (GitHub Actions, Jenkins) are absolute must-haves. Command high salary multipliers."
+        )
+        
+    # Default greeting/fallback
+    return (
+        "### 👋 Welcome to Antigravity AI Career Coach!\n\n"
+        "I am your dedicated mentor for navigating the **Indian Tech Job Market**. I can provide specialized guidance on:\n\n"
+        "* **Salary Negotiation Strategies:** Learn how to maximize your hike, interpret CTC breakdowns, and handle multiple competing offers.\n"
+        "* **ATS Resume Optimizations:** Perfect your skills list and structure to bypass hiring parsing tools.\n"
+        "* **Geographic Trends:** Understand where roles are shifting and which cities (Bengaluru, Pune, Hyderabad, NCR) command the best premiums.\n"
+        "* **Upskilling Roadmap:** Design a custom learning path to transition into high-paying engineering domains.\n\n"
+        "Feel free to ask a specific question, or test your background profile with our [Salary Estimator](/salary) and [Resume Matcher](/resume)!"
+    )
+
 if __name__ == '__main__':
     # Start web server locally
     app.run(debug=True, port=5000)

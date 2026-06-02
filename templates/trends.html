@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Live Search Trends - Tech Jobs / IN{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="hero-badge" style="margin-bottom: 8px;">Live Intelligence</div>
+    <h1 style="font-size: 36px; font-weight: 900; margin-bottom: 8px; letter-spacing: -0.03em;">Live Crowdsourced Trends</h1>
+    <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 40px;">Real-time aggregates of search queries and email leads gathered dynamically from active job seekers.</p>
+
+    <!-- Stat boxes exactly matching premium dashboard design -->
+    <div class="grid-4" style="margin-bottom: 40px;">
+        <div class="stat-box">
+            <div class="stat-label">Total Predictions Logged</div>
+            <div id="metricTotalPredictions" class="stat-number">--</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">Email Leads Captured</div>
+            <div id="metricTotalEmails" class="stat-number">--</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">Average Expected LPA</div>
+            <div id="metricAvgLpa" class="stat-number" style="color: var(--color-orange);">--</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">Intelligence Sync</div>
+            <div class="stat-number" style="color: #10b981; font-size: 20px;"><i class="fa-solid fa-cloud-arrow-up"></i> Live DB</div>
+        </div>
+    </div>
+
+    <!-- Dual Column Layout for dynamic crowdsourced charts -->
+    <div class="grid-2" style="margin-bottom: 60px; gap: 24px;">
+        <!-- Left Column: Top roles -->
+        <div class="glass-card" style="padding: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="font-size: 14px; font-weight: 800; color: var(--text-primary); margin-bottom: 0;">Most Searched Job Roles</h3>
+                <span style="color: var(--color-orange); font-size: 14px;"><i class="fa-solid fa-fire"></i></span>
+            </div>
+            <div id="crowdRolesChart" style="min-height: 350px;"></div>
+        </div>
+
+        <!-- Right Column: Top locations -->
+        <div class="glass-card" style="padding: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="font-size: 14px; font-weight: 800; color: var(--text-primary); margin-bottom: 0;">Top Search Geographic Locations</h3>
+                <span style="color: var(--color-orange); font-size: 14px;"><i class="fa-solid fa-map-location-dot"></i></span>
+            </div>
+            <div id="crowdLocationsChart" style="min-height: 350px;"></div>
+        </div>
+    </div>
+
+    <!-- Live Activity Table Log to show active data captures -->
+    <div class="glass-container" style="padding: 40px; margin-bottom: 40px;">
+        <h2 style="margin-bottom: 8px; font-size: 22px; font-weight: 900;" class="gradient-text"><i class="fa-solid fa-list-check"></i> Live Intelligence Activity Log</h2>
+        <p style="margin-bottom: 24px; font-size: 13px; color: var(--text-secondary);">Below are the last 8 anonymous queries securely logged by candidates in the platform database.</p>
+        
+        <div class="table-container" style="background: var(--bg-card); transition: var(--transition-theme);">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Query Type</th>
+                        <th>Job Role</th>
+                        <th>Experience</th>
+                        <th>Location</th>
+                        <th>Predicted LPA</th>
+                        <th>Email Lead</th>
+                        <th>Timestamp (UTC)</th>
+                    </tr>
+                </thead>
+                <tbody id="crowdActivityTableBody">
+                    <tr>
+                        <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                            <i class="fa-solid fa-circle-notch fa-spin"></i> Loading live activity logs...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

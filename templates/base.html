@@ -35,6 +35,7 @@
             <ul class="nav-links">
                 <li><a href="/">Home</a></li>
                 <li><a href="/dashboard">Dashboard</a></li>
+                <li><a href="/trends">Live Trends</a></li>
                 <li><a href="/skills">Skills Demand</a></li>
                 <li><a href="/salary">Salary Estimator</a></li>
                 <li><a href="/resume">Resume Matcher</a></li>
@@ -68,6 +69,44 @@
             </div>
         </div>
     </footer>
+
+    <!-- Premium AI Career Coach Chatbot Panel -->
+    <button id="chatbotWidgetBtn" class="chat-widget-btn" aria-label="Chat with AI Coach">
+        <i class="fa-solid fa-robot"></i>
+    </button>
+
+    <div id="chatbotWidgetPanel" class="chat-widget-panel">
+        <div class="chat-header">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span class="logo-box" style="width: 24px; height: 24px; font-size: 11px; color: var(--color-orange); background: var(--color-dark);">AI</span>
+                <div>
+                    <h4 style="font-size: 13px; font-weight: 800; margin: 0; color: #ffffff;">AI Career Coach</h4>
+                    <span style="font-size: 10px; color: #10b981; font-weight: 600;"><i class="fa-solid fa-circle" style="font-size: 6px; vertical-align: middle; margin-right: 2px;"></i> Online Advisor</span>
+                </div>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <button id="clearChatHistoryBtn" title="Clear Chat History" style="background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 13px; padding: 4px;"><i class="fa-solid fa-trash-can"></i></button>
+                <button id="closeChatWidgetBtn" style="background: none; border: none; color: #ffffff; cursor: pointer; font-size: 16px; padding: 4px;"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+        </div>
+        
+        <!-- Messages box -->
+        <div id="chatWidgetMessages" class="chat-messages-container">
+            <div class="chat-message coach">
+                Hello! I am your **AI Career Coach** 🤖
+                <br><br>
+                Need help **negotiating your expected salary**, **matching skills for top roles**, or **mapping out study plans**? Ask me anything!
+            </div>
+        </div>
+        
+        <!-- Input area -->
+        <div class="chat-input-container">
+            <form id="chatWidgetForm" style="display: flex; gap: 8px; width: 100%; margin: 0;">
+                <input type="text" id="chatWidgetInput" placeholder="Ask about salaries, skills, jobs..." autocomplete="off" required>
+                <button type="submit" class="btn btn-orange" style="padding: 10px 14px; border-radius: 6px; flex-shrink: 0;"><i class="fa-solid fa-paper-plane"></i></button>
+            </form>
+        </div>
+    </div>
 
     <!-- ApexCharts JS CDN -->
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
