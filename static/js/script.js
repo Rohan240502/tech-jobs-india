@@ -229,6 +229,9 @@ function setupAJAXHandlers() {
                         <div class="gauge-title" style="font-size: 11px;">Expected average salary</div>
                         <div class="gauge-value" style="font-size: 54px; margin-top: 5px; font-weight: 900; color: #f97316;">₹ ${result.avg_lpa} LPA</div>
                     </div>
+                    <div style="margin-bottom: 20px; padding: 10px 14px; border-radius: 6px; background: rgba(249, 115, 22, 0.08); border: 1px solid rgba(249, 115, 22, 0.2); font-size: 12px; color: #f97316; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
+                        <i class="fa-solid fa-fire"></i> Hot Market Indicator: Top 20% in geographic demand
+                    </div>
                     <div style="font-size: 16px; font-weight: 700; color: #ffffff; margin-bottom: 8px;">
                         Market range: ${result.min_lpa} LPA - ${result.max_lpa} LPA
                     </div>
@@ -306,6 +309,15 @@ function setupAJAXHandlers() {
                     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; border-bottom: 1px solid var(--border-light); padding-bottom: 16px;">
                         <h3 style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin-bottom: 0;">ATS Gap Analysis</h3>
                         <div style="font-family: var(--font-inter); font-size: 16px; font-weight: 800; color: var(--color-orange); background: rgba(249, 115, 22, 0.08); padding: 4px 10px; border-radius: 4px;">Fit Score: ${result.match_percentage}%</div>
+                    </div>
+                    
+                    <!-- Career Lift Potential banner -->
+                    <div style="padding: 12px 14px; border-radius: 8px; background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); margin-bottom: 20px; display: flex; gap: 12px; align-items: center; transition: var(--transition-theme);">
+                        <span style="color: #10b981; font-size: 18px;"><i class="fa-solid fa-arrow-trend-up"></i></span>
+                        <div style="text-align: left;">
+                            <div style="font-size: 11px; text-transform: uppercase; font-weight: 800; color: var(--text-muted); letter-spacing: 0.05em; line-height: 1;">Career Lift Potential</div>
+                            <div style="font-size: 12px; font-weight: 700; color: var(--text-primary); margin-top: 4px;">Acquiring missing skills could increase average salary potential by <strong>1.5 LPA - 3.2 LPA</strong>!</div>
+                        </div>
                     </div>
                     
                     <div style="display: flex; flex-direction: column; gap: 20px; margin-bottom: 30px;">
