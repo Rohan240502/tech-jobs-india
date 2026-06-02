@@ -1,7 +1,7 @@
 import os
 from flask import Flask, render_template, request, jsonify
 from collections import Counter
-from utils.db import init_db, execute_query
+from utils.db import init_db, execute_query, log_user_analytics
 from utils.skill_extractor import analyze_skill_gap, extract_skills
 from utils.salary_predictor import predict_salary
 
@@ -214,8 +214,19 @@ def api_predict_salary():
     title = data.get("title", "Software Engineer")
     location = data.get("location", "Bengaluru")
     experience = data.get("experience", 4)
+    email = data.get("email") # optional email capture
     
     prediction = predict_salary(title, location, experience)
+    
+    # Log search intelligence to user_analytics
+    log_user_analytics(
+        query_type="salary_prediction",
+        job_role=title,
+        experience=experience,
+        location=location,
+        predicted_lpa=prediction.get("avg_lpa", 0.0),
+        user_email=email
+    )
     return jsonify(prediction)
 
 @app.route('/api/analyze-resume', methods=['POST'])
@@ -223,8 +234,19 @@ def api_analyze_resume():
     data = request.json or {}
     resume_text = data.get("resume_text", "")
     target_role = data.get("target_role", "Software Engineer")
+    email = data.get("email") # optional email capture
     
     analysis = analyze_skill_gap(resume_text, target_role)
+    
+    # Log resume scanning intelligence to user_analytics
+    log_user_analytics(
+        query_type="resume_matching",
+        job_role=target_role,
+        experience=None,
+        location="",
+        predicted_lpa=0.0,
+        user_email=email
+    )
     
     # Dynamically find 3 job recommendations in the database matching target role and user skills
     user_skills_set = {s.lower() for s in analysis["user_skills"]}

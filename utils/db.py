@@ -43,6 +43,40 @@ def init_db():
     """
     engine, db_type = get_db_engine()
     
+    # Ensure user_analytics table exists for lead capture and market indicators
+    try:
+        if db_type == "postgresql":
+            create_analytics_query = """
+            CREATE TABLE IF NOT EXISTS user_analytics (
+                id SERIAL PRIMARY KEY,
+                query_type VARCHAR(50),
+                job_role VARCHAR(255),
+                experience DOUBLE PRECISION,
+                location VARCHAR(255),
+                predicted_lpa DOUBLE PRECISION,
+                user_email VARCHAR(255) DEFAULT NULL,
+                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+            """
+        else:
+            create_analytics_query = """
+            CREATE TABLE IF NOT EXISTS user_analytics (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                query_type VARCHAR(50),
+                job_role VARCHAR(255),
+                experience DOUBLE PRECISION,
+                location VARCHAR(255),
+                predicted_lpa DOUBLE PRECISION,
+                user_email VARCHAR(255) DEFAULT NULL,
+                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+            """
+        with engine.begin() as conn:
+            conn.execute(text(create_analytics_query))
+        print("[DB] Verified/Created user_analytics table successfully.")
+    except Exception as e:
+        print(f"[DB] Error verifying user_analytics table: {e}")
+    
     # Check if table exists and has data
     table_exists = False
     table_has_data = False
@@ -134,6 +168,29 @@ def execute_query(query_str):
     except Exception as e:
         print(f"[DB] Query execution error: {e}")
         return [], []
+
+def log_user_analytics(query_type, job_role, experience, location, predicted_lpa, user_email=None):
+    """
+    Inserts a user query entry into the user_analytics table.
+    """
+    engine, _ = get_db_engine()
+    try:
+        query = text("""
+            INSERT INTO user_analytics (query_type, job_role, experience, location, predicted_lpa, user_email)
+            VALUES (:query_type, :job_role, :experience, :location, :predicted_lpa, :user_email)
+        """)
+        with engine.begin() as conn:
+            conn.execute(query, {
+                "query_type": query_type,
+                "job_role": job_role,
+                "experience": float(experience) if experience is not None else 0.0,
+                "location": location,
+                "predicted_lpa": float(predicted_lpa) if predicted_lpa is not None else 0.0,
+                "user_email": user_email
+            })
+        print(f"[Analytics] Successfully logged {query_type} query for {job_role}.")
+    except Exception as e:
+        print(f"[Analytics] Failed to log user query: {e}")
 
 if __name__ == "__main__":
     init_db()
